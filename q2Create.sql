@@ -53,7 +53,7 @@ CREATE MATERIALIZED VIEW degrees_where_all_passed as (
 	SELECT studentid, degreeid
 	FROM completed_students_per_degree_with_grades
 	GROUP BY studentid, degreeid
-	HAVING MIN(grade) >= 5;
+	HAVING MIN(grade) >= 5
 );
 
 CREATE VIEW fem_in_dept as (

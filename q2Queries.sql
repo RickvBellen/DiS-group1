@@ -1,4 +1,4 @@
-SELECT CourseName, Grade FROM StudentRegistrationsToDegrees, Courses, CourseOffers, with_grade WHERE StudentRegistrationsToDegrees.StudentId = %1% AND StudentRegistrationsToDegrees.DegreeId = %2% AND grade >= 5 AND StudentRegistrationsToDegrees.StudentRegistrationId = with_grade.StudentRegistrationId AND with_grade.CourseOfferId = CourseOffers.CourseOfferId AND courseoffers.CourseID = courses.CourseId ORDER BY Year, Quartile, courseoffers.courseofferid;
+SELECT 0;
 SELECT distinct gpa.studentId FROM GPA, degrees_where_all_passed WHERE GPA.avgGrade > %1% and GPA.studentid = degrees_where_all_passed.StudentId and degrees_where_all_passed.degreeid = GPA.degreeid ORDER BY studentid;
 SELECT active_students_per_degree.degreeid, AVG(case gender when 'F' then 1 else 0 end) as percentage FROM active_students_per_degree, students WHERE active_students_per_degree.studentid = students.studentid GROUP BY active_students_per_degree.DegreeId;
 SELECT CAST(fem_in_dept.value AS float) / CAST(total_in_dept.value AS float) as percentage FROM fem_in_dept, total_in_dept WHERE fem_in_dept.dept = %1% and total_in_dept.dept = %1%;
