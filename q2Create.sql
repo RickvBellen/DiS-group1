@@ -102,7 +102,7 @@ CREATE VIEW student_assistant_count as (
 
 CREATE VIEW student_count as (
 	SELECT courseofferid, count(distinct studentid) as value
-	FROM with_grade, studentregistrationstodegrees
-	WHERE studentregistrationstodegrees.studentregistrationid = with_grade.studentregistrationid
+	FROM CourseRegistrations, studentregistrationstodegrees
+	WHERE studentregistrationstodegrees.studentregistrationid = CourseRegistrations.studentregistrationid
 	GROUP BY courseofferid
 );
