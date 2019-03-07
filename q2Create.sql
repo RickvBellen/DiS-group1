@@ -5,54 +5,45 @@ CREATE MATERIALIZED VIEW with_grade as (
 );
 
 CREATE MATERIALIZED VIEW GPA as (
-	SELECT studentid, studentregistrationstodegrees.degreeid, CAST(sum(grade * ECTS) AS float) / CAST(sum(ECTS) AS float) as avgGrade
-	FROM with_grade, studentregistrationstodegrees, courseoffers, courses
-	WHERE studentregistrationstodegrees.studentregistrationid = with_grade.studentregistrationid
-	and with_grade.courseofferid = courseoffers.courseofferid
+	SELECT studentregistrationid, CAST(sum(grade * ECTS) AS float) / CAST(sum(ECTS) AS float) as avgGrade
+	FROM with_grade, courseoffers, courses
+	WHERE with_grade.courseofferid = courseoffers.courseofferid
 	and courseoffers.courseid = courses.courseid
 	and grade >= 5
-	GROUP BY studentid, studentregistrationstodegrees.degreeid
+	GROUP BY studentregistrationid
 );
 
 CREATE VIEW student_ECTS as (
-	SELECT studentregistrationstodegrees.degreeid, studentid, sum(ECTS) as ECTS
-	FROM courses, courseoffers, with_grade, studentregistrationstodegrees
+	SELECT studentregistrationid, sum(ECTS) as ECTS
+	FROM courses, courseoffers, with_grade
 	WHERE courses.courseid = courseoffers.courseid
 	and courseoffers.courseofferid = with_grade.CourseOfferId
 	and grade >= 5
-	and studentregistrationstodegrees.studentregistrationid = with_grade.studentregistrationid
-	GROUP BY studentregistrationstodegrees.degreeid, studentid
+	GROUP BY studentregistrationid
 );
 
 CREATE VIEW completed_students_per_degree as (
-	SELECT DISTINCT student_ECTS.studentid, degrees.degreeid
-	FROM  student_ECTS, degrees
-	WHERE degrees.degreeid = student_ECTS.degreeid
+	SELECT DISTINCT student_ECTS.studentregistrationid
+	FROM  student_ECTS, degrees, studentregistrationstodegrees
+	WHERE degrees.degreeid = studentregistrationstodegrees.degreeid
+	and studentregistrationstodegrees.studentregistrationid = student_ECTS.studentregistrationid
 	and ECTS >= totalECTS
-	ORDER BY degrees.degreeid, student_ECTS.studentid
 );
 
 CREATE MATERIALIZED VIEW active_students_per_degree as (
-	(SELECT studentid, degreeid
+	(SELECT studentregistrationid
 	FROM studentregistrationstodegrees)
 	EXCEPT
-	(SELECT studentid, degreeid
+	(SELECT studentregistrationid
 	FROM completed_students_per_degree
 	)
 );
 
-CREATE VIEW completed_students_per_degree_with_grades as (
-	SELECT completed_students_per_degree.studentid, completed_students_per_degree.degreeid, grade
-	FROM completed_students_per_degree, with_grade, studentregistrationstodegrees
-	WHERE with_grade.studentregistrationid = studentregistrationstodegrees.studentregistrationid
-	AND studentregistrationstodegrees.degreeid = completed_students_per_degree.degreeid
-	AND studentregistrationstodegrees.studentid = completed_students_per_degree.studentid
-);
-
 CREATE MATERIALIZED VIEW degrees_where_all_passed as (
-	SELECT studentid, degreeid
-	FROM completed_students_per_degree_with_grades
-	GROUP BY studentid, degreeid
+	SELECT completed_students_per_degree.studentregistrationid
+	FROM completed_students_per_degree, with_grade
+	WHERE with_grade.studentregistrationid = completed_students_per_degree.studentregistrationid
+	GROUP BY completed_students_per_degree.studentregistrationid
 	HAVING MIN(grade) >= 5
 );
 
