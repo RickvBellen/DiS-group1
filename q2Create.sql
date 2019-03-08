@@ -5,10 +5,13 @@ CREATE VIEW with_grade as (
 );
 
 CREATE MATERIALIZED VIEW passed_grades as (
-	SELECT *
-	FROM with_grade
+	SELECT studentid, degreeid, with_grade.studentregistrationid, courseofferid, grade
+	FROM with_grade, studentregistrationstodegrees
 	WHERE grade > 4
+	and studentregistrationstodegrees.studentregistrationid = with_grade.studentregistrationid
 );
+
+CREATE INDEX idx_passed_grades on passed_grades(studentid);
 
 CREATE MATERIALIZED VIEW GPA as (
 	SELECT studentregistrationid, CAST(sum(grade * ECTS) AS float) / CAST(sum(ECTS) AS float) as avgGrade
@@ -70,10 +73,9 @@ CREATE VIEW total_in_dept as (
 
 CREATE VIEW student_grades_2018_1 as (
 	SELECT studentid, courseoffers.courseofferid, Grade
-	FROM passed_grades, CourseOffers, studentregistrationstodegrees
+	FROM passed_grades, CourseOffers
 	WHERE Year = 2018 and quartile = 1
 	and passed_grades.CourseOfferId = CourseOffers.CourseOfferId
-	and studentregistrationstodegrees.studentregistrationid = passed_grades.studentregistrationid
 );
 
 CREATE VIEW highest_course_grades as (
