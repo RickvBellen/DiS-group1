@@ -1,26 +1,31 @@
-CREATE MATERIALIZED VIEW with_grade as (
+CREATE VIEW with_grade as (
 	SELECT *
 	FROM CourseRegistrations
 	WHERE grade > 0
 );
 
+CREATE MATERIALIZED VIEW passed_grades as (
+	SELECT *
+	FROM with_grade
+	WHERE grade > 4
+);
+
 CREATE MATERIALIZED VIEW GPA as (
 	SELECT studentregistrationid, CAST(sum(grade * ECTS) AS float) / CAST(sum(ECTS) AS float) as avgGrade
-	FROM with_grade, courseoffers, courses
-	WHERE with_grade.courseofferid = courseoffers.courseofferid
+	FROM passed_grades, courseoffers, courses
+	WHERE passed_grades.courseofferid = courseoffers.courseofferid
 	and courseoffers.courseid = courses.courseid
-	and grade >= 5
 	GROUP BY studentregistrationid
 );
 
 CREATE VIEW student_ECTS as (
 	SELECT studentregistrationid, sum(ECTS) as ECTS
-	FROM courses, courseoffers, with_grade
+	FROM courses, courseoffers, passed_grades
 	WHERE courses.courseid = courseoffers.courseid
-	and courseoffers.courseofferid = with_grade.CourseOfferId
-	and grade >= 5
+	and courseoffers.courseofferid = passed_grades.CourseOfferId
 	GROUP BY studentregistrationid
 );
+
 
 CREATE VIEW completed_students_per_degree as (
 	SELECT DISTINCT student_ECTS.studentregistrationid
@@ -65,10 +70,10 @@ CREATE VIEW total_in_dept as (
 
 CREATE VIEW student_grades_2018_1 as (
 	SELECT studentid, courseoffers.courseofferid, Grade
-	FROM with_grade, CourseOffers, studentregistrationstodegrees
+	FROM passed_grades, CourseOffers, studentregistrationstodegrees
 	WHERE Year = 2018 and quartile = 1
-	and with_grade.CourseOfferId = CourseOffers.CourseOfferId
-	and studentregistrationstodegrees.studentregistrationid = with_grade.studentregistrationid
+	and passed_grades.CourseOfferId = CourseOffers.CourseOfferId
+	and studentregistrationstodegrees.studentregistrationid = passed_grades.studentregistrationid
 );
 
 CREATE VIEW highest_course_grades as (
