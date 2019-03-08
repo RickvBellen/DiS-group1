@@ -92,13 +92,15 @@ CREATE VIEW excellent_students_q6 as (
 );
 
 CREATE VIEW student_assistant_count as (
-	SELECT courseofferid, count(distinct studentregistrationid) as value
-	FROM studentassistants
+	SELECT courseofferid, count(distinct studentid) as value
+	FROM studentassistants, studentregistrationstodegrees
+	WHERE studentassistants.studentregistrationid = studentregistrationstodegrees.studentregistrationid
 	GROUP BY courseofferid
 );
 
 CREATE VIEW student_count as (
-	SELECT courseofferid, count(distinct studentregistrationid) as value
-	FROM CourseRegistrations
+	SELECT courseofferid, count(distinct studentid) as value
+	FROM CourseRegistrations, studentregistrationstodegrees
+	WHERE CourseRegistrations.studentregistrationid  = studentregistrationstodegrees.studentregistrationid
 	GROUP BY courseofferid
 );
