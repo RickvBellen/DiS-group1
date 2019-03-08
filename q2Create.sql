@@ -30,7 +30,7 @@ CREATE VIEW completed_students_per_degree as (
 	and ECTS >= totalECTS
 );
 
-CREATE MATERIALIZED VIEW active_students_per_degree as (
+CREATE VIEW active_students_per_degree as (
 	(SELECT studentregistrationid
 	FROM studentregistrationstodegrees)
 	EXCEPT
