@@ -102,3 +102,13 @@ CREATE VIEW student_count as (
 	FROM CourseRegistrations
 	GROUP BY courseofferid
 );
+
+CREATE VIEW q8 as (
+	(SELECT courseofferid from courseoffers)
+	EXCEPT
+	(SELECT courseoffers.courseofferid from courseoffers, student_assistant_count, student_count
+	WHERE student_assistant_count.courseofferid = courseoffers.CourseOfferId 
+	and student_count.courseofferid = courseoffers.CourseOfferId 
+	and student_assistant_count.value*50 >= student_count.value
+	)
+);
