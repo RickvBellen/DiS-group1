@@ -21,6 +21,8 @@ CREATE MATERIALIZED VIEW GPA as (
 	GROUP BY studentregistrationid
 );
 
+CREATE INDEX idx_gpa on gpa(studentregistrationid);
+
 CREATE VIEW student_ECTS as (
 	SELECT studentregistrationid, sum(ECTS) as ECTS
 	FROM courses, courseoffers, passed_grades
